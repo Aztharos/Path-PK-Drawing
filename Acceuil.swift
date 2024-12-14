@@ -58,22 +58,23 @@ struct BlurBackground: View {
 }
 
 struct StyledButton: View {
-  
     let systemImage: String
     let action: () -> Void
     @State private var isPressed = false
+    
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            action()  // Action du bouton
+        }) {
             Image(systemName: systemImage)
                 .font(.title3)
                 .foregroundStyle(
                     LinearGradient(
-                        gradient: Gradient(colors: [.white, .yellow]),
+                        gradient: Gradient(colors: [.pink, .purple]),
                         startPoint: .leading,
                         endPoint: .top
                     )
                 )
-             
                 .padding(10)
                 .background(
                     BlurBackground()
@@ -81,13 +82,7 @@ struct StyledButton: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(isPressed ? Color.white : Color.clear, lineWidth: 8)
-                        .animation(.easeInOut(duration: 0.4), value: isPressed)
                 )
         }
-        .onLongPressGesture(minimumDuration: 0.8, pressing: { isPressing in
-            withAnimation {
-                isPressed = isPressing
-            }
-        }, perform: {})
     }
 }
