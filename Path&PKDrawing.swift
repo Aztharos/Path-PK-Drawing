@@ -28,12 +28,15 @@ struct DrawingView: View {
     @State private var pathRedoStack: [(path: Path, color: Color, lineWidth: CGFloat)] = []
     @State private var isPKPopover: Bool = false
     @State private var isPathPopover: Bool = false
-    
+    @State private var isToolPopoverVisible: Bool = false
+    @State private var selectedTool: String? = nil
+
     var body: some View {
+        
         VStack {
             ZStack {
                 CanvasView(canvas: $canvas, color: $color, isDrawing: $isDrawing, pencilType: $pencilType, backgroundColor: $backgroundColor, toolOpacity: $opacity, toolLineWidth: $lineWidth)
-                   .environment(\.colorScheme, .light)  //colorpicker PK
+                    .environment(\.colorScheme, .light)  //colorpicker PK
                 Canvas { context, size in
                     for (path, pathColor, pathLineWidth) in paths {
                         context.stroke(path, with: .color(pathColor), lineWidth: pathLineWidth)
@@ -79,57 +82,15 @@ struct DrawingView: View {
                 )
                 .allowsHitTesting(isDrawingPath)
                 .background(Color.clear)
-            }
+       }//zstack
             VStack(spacing: 10) {
                 HStack {
-                
-                        StyledButton(systemImage: "scribble") {
-                            isDrawingPath = true
-                        }
-                        .shadow(color: isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
-                        StyledButton(systemImage: isPencilEffectEnabled ? "pencil.slash" : "pencil") {
-                            isPencilEffectEnabled.toggle()
-                        }
-                        .shadow(color: isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
-                    
-                    //Menu Popover Path
-                    StyledButton(systemImage: "list.triangle") {
-                        isPathPopover.toggle()
-                    }
-                    
-                    .shadow(color: isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
-                    .popover(isPresented: $isPathPopover,
-                             attachmentAnchor: .rect(.bounds),
-                             arrowEdge: .top
-                    ) {
-                        
-                        VStack(spacing: 15) {
-                            StyledButton(systemImage: "pencil.line") {
-                                drawingTool.type = .crayon
-                                selectedShape = "crayon"
-                            }
-                            StyledButton(systemImage: "rectangle") {
-                                drawingTool.type = .rectangle
-                                selectedShape = "rectangle"
-                            }
-                            StyledButton(systemImage: "circle") {
-                                drawingTool.type = .ellipse
-                                selectedShape = "ellipse"
-                            }
-                            StyledButton(systemImage: "line.diagonal") {
-                                drawingTool.type = .line
-                                selectedShape = "line"
-                            }
-                        }//vstack
-                        .padding()
-                        .shadow(color: isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
-                    }//popover
-                        HStack {
+                       HStack {
                             Image(systemName: "paintpalette")
                                 .foregroundColor(.gray)
                             ColorPicker("", selection: $backgroundColor)
                                 .labelsHidden()
-                        }
+                        }//hstack
                         .padding()
                         .background(
                             BlurBackground()
@@ -139,7 +100,7 @@ struct DrawingView: View {
                                 .foregroundColor(.gray)
                             ColorPicker("", selection: $color)
                                 .labelsHidden()
-                        }
+                        }//hstack
                         .padding()
                         .background(
                             BlurBackground()
@@ -150,7 +111,7 @@ struct DrawingView: View {
                                 .foregroundColor(.gray)
                                 Slider(value: $opacity, in: 0.0...1.0, step: 0.05) {
                             }
-                        }
+                        }//hstack
                      .frame(minWidth: 100, maxWidth: 200)
                         .padding()
                         .background(
@@ -159,85 +120,55 @@ struct DrawingView: View {
                         HStack {
                             Image(systemName: "line.3.horizontal.decrease")
                                 .foregroundColor(.gray)
-                            Slider(value: $lineWidth, in: 1...60, step: 2) {
+                            Slider(value: $lineWidth, in: 1...60, step: 1) {
                             }
-                        }
-                        .frame(minWidth: 100, maxWidth: 200)
+                        }//hstack
+                        .frame(minWidth: 100, maxWidth: 350)
                         .padding()
                         .background(
                             BlurBackground()
                         )
+                    StyledButton(systemImage: isPencilEffectEnabled ? "scribble" : "pencil") {
+                        isPencilEffectEnabled.toggle()
+                    }
+                    .shadow(color: isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
                     
-                    //Menu Popover PK
                     StyledButton(systemImage: "list.triangle") {
-                        isPKPopover.toggle()
+                        isToolPopoverVisible.toggle()
                     }
-                    .shadow(color: !isDrawingPath ? Color.blue : Color.red, radius: 5, x: 1, y: -3)
-                    .popover(isPresented: $isPKPopover,
-                             attachmentAnchor: .rect(.bounds),
-                             arrowEdge: .top
-                    ) {
-                        VStack(spacing: 15) {
-                            StyledButton(systemImage: "eraser.line.dashed") {
-                                isDrawing = false
-                            }
-                            StyledButton(systemImage: "paintbrush.pointed") {
-                                isDrawing = true
-                                pencilType = .marker
-                            }
-                            StyledButton(systemImage: "pencil") {
-                                isDrawing = true
-                                pencilType = .pencil
-                            }
-                            StyledButton(systemImage: "pencil.tip") {
-                                isDrawing = true
-                                pencilType = .pen
-                            }
-                            StyledButton(systemImage: "pencil.line") {
-                                isDrawing = true
-                                pencilType = .monoline
-                            }
-                            StyledButton(systemImage: "paintbrush.pointed.fill") {
-                                isDrawing = true
-                                pencilType = .fountainPen
-                            }
-                            StyledButton(systemImage: "eyedropper.halffull") {
-                                isDrawing = true
-                                pencilType = .watercolor
-                            }
-                            StyledButton(systemImage: "paintbrush") {
-                                isDrawing = true
-                                pencilType = .crayon
-                            }
-                        }//vstack
-                        .padding()
-                        .shadow(color: !isDrawingPath ? Color.green : Color.red, radius: 5, x: 1, y: -3)
-                    }//popover
+                    .shadow(color: isDrawingPath ? Color.green : Color.blue, radius: 5, x: 1, y: -3)
+                    .popover(isPresented: $isToolPopoverVisible) {
+                        UnifiedToolPopover(
+                            drawingTool: $drawingTool,
+                            selectedShape: $selectedShape,
+                            isDrawingPath: $isDrawingPath,
+                            pencilType: $pencilType,
+                            isDrawing: $isDrawing, selectedTool: $selectedTool
+                        )
+                    }
                     StyledButton(systemImage: "pencil.and.ruler.fill") {
-                        canvas.isRulerActive.toggle()
+                        if isDrawingPath == false {
+                            canvas.isRulerActive.toggle()
+                        } else {
+                            do {
+                                canvas.isRulerActive = false
+                            }
+                        }
                     }
                     .shadow(color: !isDrawingPath ? Color.blue : Color.red, radius: 5, x: 1, y: -3)
-                    StyledButton(systemImage: "pencil.circle") {
-                        isDrawingPath = false
-                    }
-                    .shadow(color: !isDrawingPath ? Color.blue : Color.red, radius: 5, x: 1, y: -3)
-                }
-                .padding(.horizontal)
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-              HStack {
+                    
+                    HStack {
                         StyledButton(systemImage: "arrow.uturn.backward", action: performUndo)
                         StyledButton(systemImage: "arrow.uturn.forward", action: performRedo)
                         StyledButton(systemImage: "trash", action: performClear)
-  }//HStack
+                    }//HStack
                     .shadow(color: isDrawingPath ? Color.green : Color.blue, radius: 5, x: 1, y: -3)
-            }//toolbaritem
-        }//toolbar
+                }//hstack
+                .padding(.horizontal)
+            }//vstack
+        }//vstack
     }//body
 }//drawingview
-
 
 extension DrawingView {
     func performUndo() {
@@ -270,5 +201,3 @@ extension DrawingView {
         }
     }
 }
-
-
