@@ -26,8 +26,6 @@ struct DrawingView: View {
     @State private var backgroundColor: Color = .white
     @State private var pathUndoStack: [(path: Path, color: Color, lineWidth: CGFloat)] = []
     @State private var pathRedoStack: [(path: Path, color: Color, lineWidth: CGFloat)] = []
-    @State private var isPKPopover: Bool = false
-    @State private var isPathPopover: Bool = false
     @State private var isToolPopoverVisible: Bool = false
     @State private var selectedTool: String? = nil
 
